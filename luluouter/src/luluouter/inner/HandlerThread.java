@@ -15,30 +15,30 @@ public class HandlerThread implements Runnable {
 
     public void run() {    
         try {    
-            // ¶ÁÈ¡¿Í»§¶ËÊý¾Ý    
+            //
             DataInputStream input = new DataInputStream(socket.getInputStream());  
-            String clientInputStr = input.readUTF();//ÕâÀïÒª×¢ÒâºÍ¿Í»§¶ËÊä³öÁ÷µÄÐ´·½·¨¶ÔÓ¦,·ñÔò»áÅ× EOFException  
-            // ´¦Àí¿Í»§¶ËÊý¾Ý    
-            System.out.println("¿Í»§¶Ë·¢¹ýÀ´µÄÄÚÈÝ:" + clientInputStr);    
+            String clientInputStr = input.readUTF();//ï¿½ï¿½ï¿½ï¿½Òª×¢ï¿½ï¿½Í¿Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ EOFException  
+            // ï¿½ï¿½ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½    
+            System.out.println("ï¿½Í»ï¿½ï¿½Ë·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + clientInputStr);    
 
-            // Ïò¿Í»§¶Ë»Ø¸´ÐÅÏ¢    
+            // ï¿½ï¿½Í»ï¿½ï¿½Ë»Ø¸ï¿½ï¿½ï¿½Ï¢    
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());    
-            System.out.print("ÇëÊäÈë:\t");    
-            // ·¢ËÍ¼üÅÌÊäÈëµÄÒ»ÐÐ    
+            System.out.print("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:\t");    
+            // ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½    
             String s = new BufferedReader(new InputStreamReader(System.in)).readLine();    
             out.writeUTF(s);    
               
             out.close();    
             input.close();    
         } catch (Exception e) {    
-            System.out.println("·þÎñÆ÷ run Òì³£: " + e.getMessage());    
+            System.out.println("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ run ï¿½ì³£: " + e.getMessage());    
         } finally {    
             if (socket != null) {    
                 try {    
                     socket.close();    
                 } catch (Exception e) {    
                     socket = null;    
-                    System.out.println("·þÎñ¶Ë finally Òì³£:" + e.getMessage());    
+                    System.out.println("ï¿½ï¿½ï¿½ï¿½ï¿½ finally ï¿½ì³£:" + e.getMessage());    
                 }    
             }    
         }   
