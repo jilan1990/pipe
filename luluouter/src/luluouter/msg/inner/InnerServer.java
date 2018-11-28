@@ -2,6 +2,8 @@ package luluouter.msg.inner;
 
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 public class InnerServer {
     private int port;
@@ -18,9 +20,12 @@ public class InnerServer {
                 //
                 Socket client = serverSocket.accept();    
                 //
-                InnerClient innerClient = new InnerClient(client);
-
-                innerClient.init();
+                ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+                executor.submit(() -> {
+                    InnerClient innerClient = InnerClient.createClient(client);
+                    innerClient.init();
+                });
+                executor.shutdown();
             }    
         } catch (Exception e) {    
             System.out.println("InnerServer.init: " + e.getMessage());

@@ -1,13 +1,14 @@
-package luluinner.pipe;
+package luluouter.data.model;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import luluinner.util.Constants;
-import luluinner.util.SocketUtil;
+import luluouter.data.util.SocketUtil;
 
 public class Pipe implements Runnable {
+    private final static int BUFFER_LENGTH = 5 * 1024 * 1024;
+
     private InputStream input;
     private OutputStream output;
     private volatile boolean flag = false;
@@ -20,7 +21,7 @@ public class Pipe implements Runnable {
 
     @Override
     public void run() {
-        byte[] buffer = new byte[Constants.BUFFER_LENGTH];
+        byte[] buffer = new byte[BUFFER_LENGTH];
         try {
             while (flag) {
                 int length = input.read(buffer);

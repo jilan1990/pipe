@@ -1,93 +1,47 @@
 package luluouter.msg.inner;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
-import com.alibaba.fastjson.JSON;
+import luluouter.data.inner.InnerDataClient;
 
-import luluouter.msg.outer.ProxyServerMaster;
+public abstract class InnerClient {
+    private final static byte FLAG_MSG = 73;
+    private final static byte FLAG_DATA = 66;
 
-public class InnerClient {
-    private BlockingQueue<Map<String, Object>> inQueue = new LinkedBlockingQueue<Map<String, Object>>();
-    private BlockingQueue<Map<String, Object>> outQueue = new LinkedBlockingQueue<Map<String, Object>>();
-
-    private Socket inner;
-    private boolean flag = true;
-
-    public InnerClient(Socket inner) {
-        this.inner = inner;
-    }
-
-    public void init() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.submit(() -> {
-            executeOut();
-            executeIn();
+    public static InnerClient createClient(Socket inner) {
+        CompletableFuture<InnerClient> executor = CompletableFuture.supplyAsync(() -> {
+            InnerClient innerClient = null;
             try {
-                Map<String, Object> msg = inQueue.take();
-                int proxyPort = (Integer) msg.get("proxyPort");
-                ProxyServerMaster.getInstance().addInnerClient(proxyPort, this);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        executor.shutdown();
-    }
-
-    private void executeIn() {
-
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.submit(() -> {
-            try (InputStream inputStream = inner.getInputStream();
-                    InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-                    BufferedReader in = new BufferedReader(inputStreamReader);) {
-
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    Map<String, Object> msg = JSON.parseObject(line, Map.class);
-                    inQueue.offer(msg);
+                InputStream inputStream = inner.getInputStream();
+                int flagInt = inputStream.read();
+                byte flag = (byte) (flagInt & 0xff);
+                switch (flag) {
+                case FLAG_MSG:
+                    innerClient = new InnerMsgClient(inner);
+                    break;
+                case FLAG_DATA:
+                    innerClient = new InnerDataClient(inner);
+                    break;
                 }
+
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            return innerClient;
         });
-        executor.shutdown();
+        try {
+            return executor.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
-    private void executeOut() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.submit(() -> {
-            try (OutputStream outputStream = inner.getOutputStream();
-                    OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
-                    BufferedWriter out = new BufferedWriter(outputStreamWriter);) {
-                while (flag) {
-                    Map<String, Object> msg = outQueue.take();
-                    String json = JSON.toJSONString(msg);
-                    out.write(json);
-                    out.write(System.lineSeparator());
-                    out.flush();
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        });
-        executor.shutdown();
-    }
-
+    public abstract void init();
 }
