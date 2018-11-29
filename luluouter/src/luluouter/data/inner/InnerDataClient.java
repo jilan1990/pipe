@@ -29,7 +29,6 @@ public class InnerDataClient implements Runnable {
             OutputStream outputStream = inner.getOutputStream();
             outputStream.write(66);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

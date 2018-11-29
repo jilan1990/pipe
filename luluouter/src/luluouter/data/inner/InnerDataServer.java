@@ -26,8 +26,9 @@ public class InnerDataServer implements Runnable {
                 executor.submit(innerClient);
                 executor.shutdown();
             }    
-        } catch (Exception e) {    
-            System.out.println("InnerServer.init: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("InnerServer.init: " + port);
+            e.printStackTrace();
         }
     }
 }
