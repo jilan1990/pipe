@@ -92,6 +92,9 @@ public class OuterMsgServer implements Runnable {
                 }
                 outputStream.write(bytes);
 
+                InputStream inputStream = outerSocket.getInputStream();
+                inputStream.read();
+
                 startPipes(outerSocket, innerSocket);
                 result.put("result", "success");
                 result.put("outerSocket", outerSocket.getRemoteSocketAddress().toString());
