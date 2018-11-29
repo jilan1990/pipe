@@ -21,11 +21,9 @@ public class InnerDataServer implements Runnable {
                 Socket client = serverSocket.accept();
                 System.out.println("InnerDataServer.accept:" + client.getRemoteSocketAddress());
                 //
+                InnerDataClient innerClient = new InnerDataClient(client);
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                executor.submit(() -> {
-                    InnerDataClient innerClient = new InnerDataClient(client);
-                    innerClient.init();
-                });
+                executor.submit(innerClient);
                 executor.shutdown();
             }    
         } catch (Exception e) {    
