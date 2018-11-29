@@ -27,12 +27,11 @@ public class UpperAgentMaster {
 
         try {
             Socket socket = new Socket(outer_ip, outer_msg_port);
+            System.out.println("UpperAgentMaster.init:" + socket.getLocalSocketAddress());
             OuterMsgServer outerServer = new OuterMsgServer(socket, configs);
 
             ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(() -> {
-                outerServer.init();
-            });
+            executor.submit(outerServer);
             executor.shutdown();
         } catch (IOException e) {
             // TODO Auto-generated catch block
