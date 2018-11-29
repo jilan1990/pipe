@@ -91,6 +91,7 @@ public class OuterMsgServer implements Runnable {
                     theIndex >>= 8;
                 }
                 outputStream.write(bytes);
+                outputStream.flush();
 
                 InputStream inputStream = outerSocket.getInputStream();
                 inputStream.read();
