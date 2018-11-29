@@ -17,6 +17,7 @@ public class Pipe implements Runnable {
         this.input = inputStream;
         this.output = outputStream;
         this.name = name;
+        System.out.println(name);
         flag = true;
     }
 
