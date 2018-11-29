@@ -55,7 +55,7 @@ public class OuterMsgServer implements Runnable {
     }
 
     private Map<String, Object> dealMsg(Map<String, Object> msg) {
-        // String inner_ip
+        // msg
         Map<String, Object> result = new HashMap<String, Object>();
 
         Integer msgType = (Integer) msg.get("msgType");
