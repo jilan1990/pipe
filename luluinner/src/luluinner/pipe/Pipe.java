@@ -18,6 +18,7 @@ public class Pipe implements Runnable {
         this.output = outputStream;
         this.name = name;
         flag = true;
+        System.out.println(name);
     }
 
     @Override

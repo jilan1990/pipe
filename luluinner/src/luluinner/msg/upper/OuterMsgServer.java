@@ -11,14 +11,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import com.alibaba.fastjson.JSON;
 
 import luluinner.pipe.Pipe;
 import luluinner.util.SocketUtil;
 
-public class OuterMsgServer {
+public class OuterMsgServer implements Runnable {
     private final static int FLAG_MSG_GET_PORT = 1024;
     private final static int FLAG_MSG_CREATE_DATA_PIPE = 2048;
 
@@ -30,30 +29,28 @@ public class OuterMsgServer {
         this.configs = configs;
     }
 
-    public void init() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.submit(() -> {
-            try (OutputStream outputStream = socket.getOutputStream();
-                    DataOutputStream out = new DataOutputStream(outputStream);
-                    InputStream inputStream = socket.getInputStream();
-                    DataInputStream in = new DataInputStream(inputStream);) {
+    @Override
+    public void run() {
+        try (OutputStream outputStream = socket.getOutputStream();
+                DataOutputStream out = new DataOutputStream(outputStream);
+                InputStream inputStream = socket.getInputStream();
+                DataInputStream in = new DataInputStream(inputStream);) {
 
-                String line = null;
-                while ((line = in.readUTF()) != null) {
-                    Map<String, Object> msg = JSON.parseObject(line, Map.class);
+            String line = null;
+            while ((line = in.readUTF()) != null) {
+                System.out.println("OuterMsgServer.readUTF:" + line);
+                Map<String, Object> msg = JSON.parseObject(line, Map.class);
 
-                    Map<String, Object> result = dealMsg(msg);
+                Map<String, Object> result = dealMsg(msg);
 
-                    String json = JSON.toJSONString(result);
-                    out.writeUTF(json);
-                    out.flush();
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                String json = JSON.toJSONString(result);
+                out.writeUTF(json);
+                out.flush();
+                System.out.println("OuterMsgServer.writeUTF:" + json);
             }
-        });
-        executor.shutdown();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private Map<String, Object> dealMsg(Map<String, Object> msg) {
@@ -65,7 +62,9 @@ public class OuterMsgServer {
             result.put("msgType", FLAG_MSG_GET_PORT);
             result.put("proxyPort", configs.get("inner_port"));
         } else if (msgType == FLAG_MSG_CREATE_DATA_PIPE) {
-            long index = (long) msg.get("index");
+            Object indexObj = msg.get("index");
+            String indexStr = String.valueOf(indexObj);
+            Long index = Long.parseLong(indexStr);
 
             result.put("msgType", FLAG_MSG_CREATE_DATA_PIPE);
             result.put("index", index);
@@ -78,8 +77,10 @@ public class OuterMsgServer {
 
             try {
                 Socket innerSocket = new Socket(inner_ip, inner_port);
+                System.out.println("OuterMsgServer.dealMsg.innerSocket:" + innerSocket.getRemoteSocketAddress());
 
                 Socket outerSocket = new Socket(outer_ip, outer_data_port);
+                System.out.println("OuterMsgServer.dealMsg.outerSocket:" + outerSocket.getRemoteSocketAddress());
 
                 OutputStream outputStream = outerSocket.getOutputStream();
                 byte[] bytes = new byte[8];
