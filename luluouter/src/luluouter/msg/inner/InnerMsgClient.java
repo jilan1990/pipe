@@ -64,6 +64,9 @@ public class InnerMsgClient {
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             } finally {
                 System.out.println("InnerMsgClient.finally:" + key);
             }
