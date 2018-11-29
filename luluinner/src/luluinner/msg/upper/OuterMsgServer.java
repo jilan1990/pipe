@@ -27,6 +27,7 @@ public class OuterMsgServer implements Runnable {
     public OuterMsgServer(Socket socket, Map<String, Object> configs) {
         this.socket = socket;
         this.configs = configs;
+        System.out.println("OuterMsgServer:" + socket.getRemoteSocketAddress());
     }
 
     @Override

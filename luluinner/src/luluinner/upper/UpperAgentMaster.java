@@ -28,6 +28,7 @@ public class UpperAgentMaster {
         try {
             Socket socket = new Socket(outer_ip, outer_msg_port);
             System.out.println("UpperAgentMaster.init" + socket.getRemoteSocketAddress());
+
             OuterMsgServer outerServer = new OuterMsgServer(socket, configs);
 
             ExecutorService executor = Executors.newSingleThreadExecutor();
