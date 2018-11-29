@@ -9,7 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import luluouter.msg.inner.InnerMsgClient;
 
-public class ProxyServer {
+public class ProxyServer implements Runnable {
     private Map<String, InnerMsgClient> innerMsgClients = new ConcurrentHashMap<String, InnerMsgClient>();
     private int proxyPort;
 
@@ -17,10 +17,18 @@ public class ProxyServer {
         this.proxyPort = proxyPort;
     }
 
-    public void init() {
+    public void addInnerClient(InnerMsgClient innerClient) {
+        innerMsgClients.put(innerClient.getKey(), innerClient);
+    }
+
+    @Override
+    public void run() {
         try (ServerSocket serverSocket = new ServerSocket(proxyPort);) {
+            System.out.println("ProxyServer.listening:" + proxyPort);
+
             while (true) {
                 Socket outerClient = serverSocket.accept();
+                System.out.println("ProxyServer.accept:" + outerClient.getRemoteSocketAddress());
 
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.submit(() -> {
@@ -36,10 +44,6 @@ public class ProxyServer {
         } catch (Exception e) {
             System.out.println("ProxyServer.init: " + e.getMessage());
         }
-    }
-
-    public void addInnerClient(InnerMsgClient innerClient) {
-        innerMsgClients.put(innerClient.getKey(), innerClient);
     }
 
 }

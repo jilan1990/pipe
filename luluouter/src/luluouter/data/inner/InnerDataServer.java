@@ -5,20 +5,21 @@ import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class InnerDataServer {
+public class InnerDataServer implements Runnable {
     private int port;
 
     public InnerDataServer(int port) {
         this.port = port;
     }
 
-    public void init() {
-
+    @Override
+    public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port);) {
-            System.out.println("listening:" + port);
+            System.out.println("InnerDataServer.listening:" + port);
             while (true) {    
                 //
-                Socket client = serverSocket.accept();    
+                Socket client = serverSocket.accept();
+                System.out.println("InnerDataServer.accept:" + client.getRemoteSocketAddress());
                 //
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.submit(() -> {
@@ -30,5 +31,5 @@ public class InnerDataServer {
         } catch (Exception e) {    
             System.out.println("InnerServer.init: " + e.getMessage());
         }
-	}
+    }
 }

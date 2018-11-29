@@ -5,17 +5,17 @@ import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class InnerMsgServer {
+public class InnerMsgServer implements Runnable {
     private int port;
 
     public InnerMsgServer(int port) {
         this.port = port;
     }
 
-    public void init() {
-
+    @Override
+    public void run() {
         try (ServerSocket serverSocket = new ServerSocket(port);) {
-            System.out.println("listening:" + port);
+            System.out.println("InnerMsgServer.listening:" + port);
             while (true) {    
                 //
                 Socket client = serverSocket.accept();    
@@ -30,5 +30,5 @@ public class InnerMsgServer {
         } catch (Exception e) {    
             System.out.println("InnerServer.init: " + e.getMessage());
         }
-	}
+    }
 }

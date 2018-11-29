@@ -2,6 +2,8 @@ package luluouter.msg.outer;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import luluouter.msg.inner.InnerMsgClient;
 
@@ -23,6 +25,11 @@ public class ProxyServerMaster {
         ProxyServer proxyServer = proxyServers.get(proxyPort);
         if (proxyServer == null) {
             proxyServer = new ProxyServer(proxyPort);
+
+            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+            executor.submit(proxyServer);
+            executor.shutdown();
+
             proxyServers.put(proxyPort, proxyServer);
         }
         proxyServer.addInnerClient(innerClient);
