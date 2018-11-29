@@ -34,6 +34,7 @@ public class InnerMsgClient {
     public InnerMsgClient(Socket inner) {
         this.inner = inner;
         key = String.valueOf(inner.getRemoteSocketAddress());
+        stop = false;
         System.out.println("InnerMsgClient:" + key);
     }
 
@@ -46,12 +47,15 @@ public class InnerMsgClient {
                     DataInputStream in = new DataInputStream(inputStream);) {
                 while (!stop) {
                     Map<String, Object> msg = outQueue.take();
+                    System.out.println("InnerMsgClient.take:" + msg);
                     String json = JSON.toJSONString(msg);
                     out.writeUTF(json);
                     out.flush();
+                    System.out.println("InnerMsgClient.writeUTF:" + json);
 
                     String line = in.readUTF();
                     Map<String, Object> result = JSON.parseObject(line, Map.class);
+                    System.out.println("InnerMsgClient.readUTF:" + result);
                     dealMsg(result);
                 }
             } catch (IOException e) {
@@ -60,6 +64,8 @@ public class InnerMsgClient {
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+            } finally {
+                System.out.println("InnerMsgClient.finally:" + key);
             }
         });
         executor.shutdown();
@@ -67,6 +73,7 @@ public class InnerMsgClient {
         Map<String, Object> msg = new HashMap<String, Object>();
         msg.put("msgType", FLAG_MSG_GET_PORT);
         outQueue.offer(msg);
+        System.out.println("InnerMsgClient.init:" + msg);
     }
 
     private void dealMsg(Map<String, Object> msg) {
@@ -75,7 +82,10 @@ public class InnerMsgClient {
             int proxyPort = (Integer) msg.get("proxyPort");
             ProxyServerMaster.getInstance().addInnerClient(proxyPort, this);
         } else if (msgType == FLAG_MSG_CREATE_DATA_PIPE) {
-            long index = (long) msg.get("index");
+            Object indexObj = msg.get("index");
+            String indexStr = String.valueOf(indexObj);
+            Long index = Long.parseLong(indexStr);
+
             String result = (String) msg.get("result");
             if ("success".equals(result)) {
                 InnerDataMaster.getInstance().startPipes(index);

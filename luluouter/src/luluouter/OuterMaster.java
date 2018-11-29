@@ -1,6 +1,8 @@
 package luluouter;
 
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import luluouter.config.ConfigLoad;
 import luluouter.data.inner.InnerDataServer;
@@ -19,13 +21,18 @@ public class OuterMaster {
         int msg_port = (int) configs.get("msg_port");
         int data_port = (int) configs.get("data_port");
         
-        System.out.println("InnerMsgServer ...\n");
+        System.out.println("InnerDataServer ...\n");
         InnerDataServer innerDataServer = new InnerDataServer(data_port);
-        innerDataServer.init();
+        startThread(innerDataServer);
 
         System.out.println("InnerMsgServer ...\n");
         InnerMsgServer innerServer = new InnerMsgServer(msg_port);
-		innerServer.init();
+        startThread(innerServer);
 	}
 
+    private static void startThread(Runnable runnable) {
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+        executor.submit(runnable);
+        executor.shutdown();
+    }
 }
