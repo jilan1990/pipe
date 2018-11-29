@@ -12,21 +12,22 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.alibaba.fastjson.JSON;
 
-import luluouter.data.inner.InnerDataClient;
 import luluouter.data.inner.InnerDataMaster;
 import luluouter.msg.outer.ProxyServerMaster;
 
-public class InnerMsgClient extends InnerClient {
+public class InnerMsgClient {
+    private final static int FLAG_MSG_GET_PORT = 1024;
+    private final static int FLAG_MSG_CREATE_DATA_PIPE = 2048;
 
-    private BlockingQueue<Map<String, Object>> inQueue = new LinkedBlockingQueue<Map<String, Object>>();
     private BlockingQueue<Map<String, Object>> outQueue = new LinkedBlockingQueue<Map<String, Object>>();
 
     private Socket inner;
     private String key;
-    private long index = 0;
+    AtomicLong index = new AtomicLong();
 
     private volatile boolean stop = true;
 
@@ -36,64 +37,22 @@ public class InnerMsgClient extends InnerClient {
         System.out.println("InnerMsgClient:" + key);
     }
 
-    @Override
     public void init() {
-        executeOut();
-        executeIn();
-        try {
-            Map<String, Object> msg = inQueue.take();
-            int proxyPort = (Integer) msg.get("proxyPort");
-            ProxyServerMaster.getInstance().addInnerClient(proxyPort, this);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void newSocket(int proxyPort) {
-        Map<String, Object> msg = new HashMap<String, Object>();
-        msg.put("proxyPort", proxyPort);
-        msg.put("index", index);
-        outQueue.offer(msg);
-        try {
-            Map<String, Object> result = inQueue.take();
-            System.out.println("InnerMsgClient.newSocket:" + result);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        InnerDataClient innerDataClient = InnerDataMaster.getInstance().getInnerDataClient(msg);
-        index++;
-    }
-
-    private void executeIn() {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-        executor.submit(() -> {
-            try (InputStream inputStream = inner.getInputStream();
-                    DataInputStream in = new DataInputStream(inputStream);) {
-
-                String line = null;
-                while ((line = in.readUTF()) != null) {
-                    Map<String, Object> msg = JSON.parseObject(line, Map.class);
-                    inQueue.offer(msg);
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        });
-        executor.shutdown();
-    }
-
-    private void executeOut() {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         executor.submit(() -> {
             try (OutputStream outputStream = inner.getOutputStream();
-                    DataOutputStream out = new DataOutputStream(outputStream);) {
+                    DataOutputStream out = new DataOutputStream(outputStream);
+                    InputStream inputStream = inner.getInputStream();
+                    DataInputStream in = new DataInputStream(inputStream);) {
                 while (!stop) {
                     Map<String, Object> msg = outQueue.take();
                     String json = JSON.toJSONString(msg);
                     out.writeUTF(json);
                     out.flush();
+
+                    String line = in.readUTF();
+                    Map<String, Object> result = JSON.parseObject(line, Map.class);
+                    dealMsg(result);
                 }
             } catch (IOException e) {
                 // TODO Auto-generated catch block
@@ -104,6 +63,37 @@ public class InnerMsgClient extends InnerClient {
             }
         });
         executor.shutdown();
+
+        Map<String, Object> msg = new HashMap<String, Object>();
+        msg.put("msgType", FLAG_MSG_GET_PORT);
+        outQueue.offer(msg);
+    }
+
+    private void dealMsg(Map<String, Object> msg) {
+        Integer msgType = (Integer) msg.get("msgType");
+        if (msgType == FLAG_MSG_GET_PORT) {
+            int proxyPort = (Integer) msg.get("proxyPort");
+            ProxyServerMaster.getInstance().addInnerClient(proxyPort, this);
+        } else if (msgType == FLAG_MSG_CREATE_DATA_PIPE) {
+            long index = (long) msg.get("index");
+            String result = (String) msg.get("result");
+            if ("success".equals(result)) {
+                InnerDataMaster.getInstance().startPipes(index);
+            } else {
+                InnerDataMaster.getInstance().destroyOuterClient(index);
+            }
+        }
+    }
+
+    public void createPipes(Socket outerClient) {
+        long theIndex = index.incrementAndGet();
+
+        Map<String, Object> msg = new HashMap<String, Object>();
+        msg.put("msgType", FLAG_MSG_CREATE_DATA_PIPE);
+        msg.put("index", theIndex);
+        outQueue.offer(msg);
+
+        InnerDataMaster.getInstance().addOuterClient(theIndex, outerClient);
     }
 
     public String getKey() {

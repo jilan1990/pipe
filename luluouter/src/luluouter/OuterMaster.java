@@ -1,21 +1,30 @@
 package luluouter;
 
-import luluouter.msg.inner.InnerServer;
+import java.util.Map;
+
+import luluouter.config.ConfigLoad;
+import luluouter.data.inner.InnerDataServer;
+import luluouter.msg.inner.InnerMsgServer;
 
 public class OuterMaster {
 
 	public static void main(String[] args) {
 
-        // System.out.println("outer ...\n");
-        // OuterServer outerServer = new OuterServer();
-        // outerServer.init();
-        int port = 5273;
-        if (args != null && args.length >= 1) {
-            port = Integer.parseInt(args[0]);
+        ConfigLoad configLoad = new ConfigLoad();
+        Map<String, Object> configs = configLoad.loadConfig();
+        if (configs == null) {
+            return;
         }
+
+        int msg_port = (int) configs.get("msg_port");
+        int data_port = (int) configs.get("data_port");
         
-        System.out.println("inner ...\n");
-        InnerServer innerServer = new InnerServer(port);
+        System.out.println("InnerMsgServer ...\n");
+        InnerDataServer innerDataServer = new InnerDataServer(data_port);
+        innerDataServer.init();
+
+        System.out.println("InnerMsgServer ...\n");
+        InnerMsgServer innerServer = new InnerMsgServer(msg_port);
 		innerServer.init();
 	}
 

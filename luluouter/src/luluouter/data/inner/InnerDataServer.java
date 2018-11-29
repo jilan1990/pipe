@@ -1,14 +1,14 @@
-package luluouter.msg.inner;
+package luluouter.data.inner;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class InnerServer {
+public class InnerDataServer {
     private int port;
 
-    public InnerServer(int port) {
+    public InnerDataServer(int port) {
         this.port = port;
     }
 
@@ -22,7 +22,7 @@ public class InnerServer {
                 //
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
                 executor.submit(() -> {
-                    InnerClient innerClient = InnerClient.createClient(client);
+                    InnerDataClient innerClient = new InnerDataClient(client);
                     innerClient.init();
                 });
                 executor.shutdown();

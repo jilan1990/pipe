@@ -29,7 +29,7 @@ public class ProxyServer {
                     for (Map.Entry<String, InnerMsgClient> entry : innerMsgClients.entrySet()) {
                         innerMsgClient = entry.getValue();
                     }
-                    innerMsgClient.newSocket(proxyPort);
+                    innerMsgClient.createPipes(outerClient);
                 });
                 executor.shutdown();
             }

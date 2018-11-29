@@ -10,11 +10,13 @@ import luluinner.util.SocketUtil;
 public class Pipe implements Runnable {
     private InputStream input;
     private OutputStream output;
+    private String name;
     private volatile boolean flag = false;
 
-    public Pipe(InputStream inputStream, OutputStream outputStream) {
+    public Pipe(InputStream inputStream, OutputStream outputStream, String name) {
         this.input = inputStream;
         this.output = outputStream;
+        this.name = name;
         flag = true;
     }
 
@@ -24,7 +26,7 @@ public class Pipe implements Runnable {
         try {
             while (flag) {
                 int length = input.read(buffer);
-                System.out.println("receive from client:" + length);
+                System.out.println("receive " + name + " length:" + length);
                 if (length > 0) {
                     output.write(buffer, 0, length);
                     output.flush();

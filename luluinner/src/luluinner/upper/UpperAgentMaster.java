@@ -2,10 +2,11 @@ package luluinner.upper;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import luluinner.util.Constants;
+import luluinner.msg.upper.OuterMsgServer;
 
 public class UpperAgentMaster {
 
@@ -19,12 +20,19 @@ public class UpperAgentMaster {
         return INSTANCE;
     }
 
-    public void init() {
+    public void init(Map<String, Object> configs) {
+
+        String outer_ip = (String) configs.get("outer_ip");
+        int outer_msg_port = (Integer) configs.get("outer_msg_port");
+
         try {
-            Socket socket = new Socket(Constants.OUTER_HOST, Constants.MSG_PORT);
-            UpperAgentHandler agent = new UpperAgentHandler(socket);
+            Socket socket = new Socket(outer_ip, outer_msg_port);
+            OuterMsgServer outerServer = new OuterMsgServer(socket, configs);
+
             ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.submit(agent);
+            executor.submit(() -> {
+                outerServer.init();
+            });
             executor.shutdown();
         } catch (IOException e) {
             // TODO Auto-generated catch block
