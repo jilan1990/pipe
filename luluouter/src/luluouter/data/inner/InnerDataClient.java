@@ -28,6 +28,7 @@ public class InnerDataClient implements Runnable {
 
             OutputStream outputStream = inner.getOutputStream();
             outputStream.write(66);
+            outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
