@@ -8,7 +8,7 @@ import luluouter.config.ConfigLoad;
 import luluouter.data.inner.InnerDataServer;
 import luluouter.msg.inner.InnerMsgServer;
 
-public class OuterMaster {
+public class StartUp {
 
 	public static void main(String[] args) {
 
