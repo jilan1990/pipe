@@ -36,10 +36,12 @@ public class Pipe implements Runnable {
                 flag = false;
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Pipe.IOException: " + name + "/" + e.getMessage());
+            // e.printStackTrace();
         } finally {
+            System.out.println("Pipe.finally: " + name);
             SocketUtil.close(input);
-            // SocketUtil.close(output);
+            SocketUtil.close(output);
         }
     }
 
