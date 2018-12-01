@@ -46,4 +46,15 @@ public class ProxyServer implements Runnable {
         }
     }
 
+    public void heartBeat() {
+        for (Map.Entry<String, InnerMsgClient> entry : innerMsgClients.entrySet()) {
+            InnerMsgClient innerMsgClient = entry.getValue();
+            innerMsgClient.heartBeat();
+        }
+    }
+
+    public void removeInnerMsgClient(String key) {
+        innerMsgClients.remove(key);
+    }
+
 }

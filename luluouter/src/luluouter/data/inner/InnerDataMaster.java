@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 import luluouter.data.model.Pipe;
 import luluouter.data.util.SocketUtil;
@@ -16,6 +17,7 @@ public class InnerDataMaster {
     private Map<Long, Socket> outerClients = new ConcurrentHashMap<Long, Socket>();
     private Map<Long, Socket> innerDataSockets = new ConcurrentHashMap<Long, Socket>();
 
+    AtomicLong index = new AtomicLong();
 
     public static InnerDataMaster getInstance() {
         return INSTANCE;
@@ -25,8 +27,10 @@ public class InnerDataMaster {
 
     }
 
-    public void addOuterClient(long theIndex, Socket outerClient) {
+    public long addOuterClient(Socket outerClient) {
+        long theIndex = index.incrementAndGet();
         outerClients.put(theIndex, outerClient);
+        return theIndex;
     }
 
     public Socket removeOuterClient(long index) {

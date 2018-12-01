@@ -20,11 +20,11 @@ public class InnerMsgServer implements Runnable {
                 //
                 Socket client = serverSocket.accept();    
                 //
+                InnerMsgClient innerClient = new InnerMsgClient(port, client);
+                innerClient.init();
+
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-                executor.submit(() -> {
-                    InnerMsgClient innerClient = new InnerMsgClient(client);
-                    innerClient.init();
-                });
+                executor.submit(innerClient);
                 executor.shutdown();
             }    
         } catch (Exception e) {    
