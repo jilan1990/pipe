@@ -3,7 +3,7 @@ package luluinner;
 import java.util.Map;
 
 import luluinner.config.ConfigLoad;
-import luluinner.upper.UpperAgentMaster;
+import luluinner.upper.OuterMsgMaster;
 
 public class StartUp {
 
@@ -15,7 +15,7 @@ public class StartUp {
             return;
         }
 
-        UpperAgentMaster.getInstance().init(configs);
+        OuterMsgMaster.getInstance().init(configs);
     }
 
 }

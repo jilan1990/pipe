@@ -15,6 +15,7 @@ import java.util.concurrent.Executors;
 import com.alibaba.fastjson.JSON;
 
 import luluinner.pipe.Pipe;
+import luluinner.util.Constants;
 import luluinner.util.SocketUtil;
 
 public class OuterMsgServer implements Runnable {
@@ -24,10 +25,12 @@ public class OuterMsgServer implements Runnable {
 
     private Socket socket;
     private Map<String, Object> configs;
+    private volatile long lastHeartBeatTs;
 
     public OuterMsgServer(Socket socket, Map<String, Object> configs) {
         this.socket = socket;
         this.configs = configs;
+        lastHeartBeatTs = System.currentTimeMillis();
         System.out.println("OuterMsgServer:" + socket.getRemoteSocketAddress());
     }
 
@@ -40,6 +43,7 @@ public class OuterMsgServer implements Runnable {
 
             String line = null;
             while ((line = in.readUTF()) != null) {
+                lastHeartBeatTs = System.currentTimeMillis();
                 if (!line.contains(MSG_KEY_HEART_BEAT)) {
                     System.out.println("OuterMsgServer.readUTF:" + line);
                 }
@@ -56,6 +60,8 @@ public class OuterMsgServer implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            System.out.println("OuterMsgServer.finally:" + configs);
         }
     }
 
@@ -134,5 +140,9 @@ public class OuterMsgServer implements Runnable {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.submit(pipe);
         executor.shutdown();
+    }
+
+    public boolean isTimeOut() {
+        return (System.currentTimeMillis() - lastHeartBeatTs) > Constants.RESTART_PERIOD;
     }
 }
