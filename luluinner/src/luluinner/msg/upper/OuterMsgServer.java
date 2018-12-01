@@ -20,6 +20,7 @@ import luluinner.util.SocketUtil;
 public class OuterMsgServer implements Runnable {
     private final static int FLAG_MSG_GET_PORT = 1024;
     private final static int FLAG_MSG_CREATE_DATA_PIPE = 2048;
+    private final static String MSG_KEY_HEART_BEAT = "heartBeat";
 
     private Socket socket;
     private Map<String, Object> configs;
@@ -39,7 +40,9 @@ public class OuterMsgServer implements Runnable {
 
             String line = null;
             while ((line = in.readUTF()) != null) {
-                System.out.println("OuterMsgServer.readUTF:" + line);
+                if (!line.contains(MSG_KEY_HEART_BEAT)) {
+                    System.out.println("OuterMsgServer.readUTF:" + line);
+                }
                 Map<String, Object> msg = JSON.parseObject(line, Map.class);
 
                 Map<String, Object> result = dealMsg(msg);
@@ -47,7 +50,9 @@ public class OuterMsgServer implements Runnable {
                 String json = JSON.toJSONString(result);
                 out.writeUTF(json);
                 out.flush();
-                System.out.println("OuterMsgServer.writeUTF:" + json);
+                if (!result.containsKey(MSG_KEY_HEART_BEAT)) {
+                    System.out.println("OuterMsgServer.writeUTF:" + json);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -106,6 +111,8 @@ public class OuterMsgServer implements Runnable {
                 result.put("result", "failed");
                 e.printStackTrace();
             }
+        } else {
+            result.putAll(msg);
         }
         return result;
     }
