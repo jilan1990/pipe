@@ -25,14 +25,13 @@ public class InnerMsgClient implements Runnable {
 
     private BlockingQueue<Map<String, Object>> outQueue = new LinkedBlockingQueue<Map<String, Object>>();
 
-    private final int port;
+    private int proxyPort;
     private final Socket inner;
     private final String key;
 
     private volatile boolean stop = true;
 
-    public InnerMsgClient(int port, Socket inner) {
-        this.port = port;
+    public InnerMsgClient(Socket inner) {
         this.inner = inner;
         key = String.valueOf(inner.getRemoteSocketAddress());
         stop = false;
@@ -74,8 +73,8 @@ public class InnerMsgClient implements Runnable {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } finally {
-            ProxyServerMaster.getInstance().removeInnerMsgClient(port, key);
-            System.out.println("InnerMsgClient.finally:" + port + "/" + key);
+            ProxyServerMaster.getInstance().removeInnerMsgClient(proxyPort, key);
+            System.out.println("InnerMsgClient.finally:" + proxyPort + "/" + key);
         }
     }
 
@@ -88,13 +87,13 @@ public class InnerMsgClient implements Runnable {
 
     public void addMsg(Map<String, Object> msg) {
         boolean result = outQueue.offer(msg);
-        System.out.println("InnerMsgClient.outQueue.offer:" + result);
+        System.out.println("InnerMsgClient.outQueue.offer:" + result + "/" + msg);
     }
 
     private void dealMsg(Map<String, Object> msg) {
         Integer msgType = (Integer) msg.get("msgType");
         if (msgType == FLAG_MSG_GET_PORT) {
-            int proxyPort = (Integer) msg.get("proxyPort");
+            proxyPort = (Integer) msg.get("proxyPort");
             ProxyServerMaster.getInstance().addInnerClient(proxyPort, this);
         } else if (msgType == FLAG_MSG_CREATE_DATA_PIPE) {
             Object indexObj = msg.get("index");

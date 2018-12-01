@@ -18,9 +18,9 @@ public class InnerMsgServer implements Runnable {
             System.out.println("InnerMsgServer.listening:" + port);
             while (true) {    
                 //
-                Socket client = serverSocket.accept();    
+                Socket client = serverSocket.accept();
                 //
-                InnerMsgClient innerClient = new InnerMsgClient(port, client);
+                InnerMsgClient innerClient = new InnerMsgClient(client);
                 innerClient.init();
 
                 ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
