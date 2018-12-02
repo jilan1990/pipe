@@ -3,11 +3,13 @@ package luluouter.data.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import luluouter.data.util.SocketUtil;
 
 public class Pipe implements Runnable {
     private final static int BUFFER_LENGTH = 5 * 1024 * 1024;
+    private static AtomicLong index = new AtomicLong();
 
     private InputStream input;
     private OutputStream output;
@@ -17,8 +19,8 @@ public class Pipe implements Runnable {
     public Pipe(InputStream inputStream, OutputStream outputStream, String name) {
         this.input = inputStream;
         this.output = outputStream;
-        this.name = name;
-        System.out.println(name);
+        this.name = index.getAndIncrement() + "/" + name;
+        System.out.println(this.name);
         flag = true;
     }
 
