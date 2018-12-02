@@ -3,11 +3,15 @@ package luluinner.pipe;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 import luluinner.util.Constants;
 import luluinner.util.SocketUtil;
 
 public class Pipe implements Runnable {
+
+    private static AtomicLong index = new AtomicLong();
+
     private InputStream input;
     private OutputStream output;
     private String name;
@@ -16,8 +20,8 @@ public class Pipe implements Runnable {
     public Pipe(InputStream inputStream, OutputStream outputStream, String name) {
         this.input = inputStream;
         this.output = outputStream;
-        this.name = name;
-        System.out.println(name);
+        this.name = index.getAndIncrement() + "/" + name;
+        System.out.println(this.name);
         flag = true;
     }
 
