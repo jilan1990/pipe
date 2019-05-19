@@ -1,0 +1,10 @@
+
+
+mappings:
+    - mappingport: 18080
+      shyip: "127.0.0.1"
+      shyport: 8080
+    - mappingport: 13389
+      shyip: "127.0.0.1"
+      shyport: 3389
+   
